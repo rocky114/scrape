@@ -34,7 +34,8 @@ async def get_parser(url: str) -> BaseParser:
 
 @router.get("/scrape", response_model=ResponseModel)
 async def scrape_data(url: str):
-    context = await manager.browser.new_context()
+    browser = await manager.playwright.chromium.launch(headless=False)
+    context = await browser.new_context()
 
     try:
         # 匹配解析器
@@ -59,3 +60,4 @@ async def scrape_data(url: str):
         return ResponseModel(status="success", message="ok")
     finally:
         await context.close()
+        await browser.close()

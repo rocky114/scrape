@@ -7,8 +7,6 @@ class BaseParser(ABC):
     @classmethod
     def match(cls, url: str) -> bool:
         domain = urlparse(url).netloc
-        print(f"debug{url}")
-        print(domain)
         return cls.domain() in domain
     
     @staticmethod
