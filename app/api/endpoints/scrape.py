@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from importlib import import_module
 from pathlib import Path
 from app.services.parsers.base_parser import BaseParser
@@ -10,11 +10,11 @@ router = APIRouter()
 
 # 动态加载所有解析器
 def load_parsers():
-    parse_dir = Path(__file__).parent / "parsers"
+    parse_dir = Path(__file__).parent.parent.parent / "services/parsers"
     modules = [f.stem for f in parse_dir.glob("*.py") if f.is_file() and f.stem != "__init__"]
     parsers = []
     for module in modules:
-        mod = import_module(f"app.parsers.{module}")
+        mod = import_module(f"app.services.parsers.{module}")
         for attr in dir(mod):
             cls = getattr(mod, attr)
             try:
@@ -32,16 +32,21 @@ async def get_parser(url: str) -> BaseParser:
         
     raise ValueError("No parser available for this URL")
 
-@router.post("/scrape", response_model=ResponseModel)
+@router.get("/scrape", response_model=ResponseModel)
 async def scrape_data(url: str):
-
     context = await manager.browser.new_context()
 
     try:
+        # 匹配解析器
+        parser = await get_parser(url)
+
         page = await context.new_page()
 
          # 访问页面
         await page.goto(url, timeout=30000)
+
+        # 等到dom加载完成
+        await page.wait_for_load_state("domcontentloaded")
 
         # 匹配解析器
         parser = await get_parser(url)
@@ -53,4 +58,4 @@ async def scrape_data(url: str):
 
         return ResponseModel(status="success", message="ok")
     finally:
-        context.close()
+        await context.close()

@@ -1,16 +1,18 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from playwright.async_api import async_playwright, Browser
 from app.core.browser import manager
 from app.api.routers import api_router
+import threading
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
         await manager.initialize()
+
         yield
     finally:
         await manager.close()
+
 
 app = FastAPI(title="Project", lifespan=lifespan)
 
