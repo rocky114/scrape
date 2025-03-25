@@ -35,19 +35,18 @@ async def get_parser(url: str) -> BaseParser:
 @router.get("/scrape", response_model=ResponseModel)
 async def scrape_data(url: str):
     browser = await manager.playwright.chromium.launch(headless=False)
-    context = await browser.new_context()
 
     try:
         # 匹配解析器
         parser = await get_parser(url)
 
-        page = await context.new_page()
+        page = await browser.new_page()
 
          # 访问页面
         await page.goto(url, timeout=30000)
 
         # 等到dom加载完成
-        await page.wait_for_load_state("domcontentloaded")
+        await page.wait_for_load_state("domcontentloaded", timeout=5000)
 
         # 匹配解析器
         parser = await get_parser(url)
@@ -59,5 +58,4 @@ async def scrape_data(url: str):
 
         return ResponseModel(status="success", message="ok")
     finally:
-        await context.close()
         await browser.close()
