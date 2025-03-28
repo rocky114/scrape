@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.schemas.response import ResponseModel
 from app.core.browser import manager
 from app.schemas.scrape import ScrapeResonse
+from app.schemas.scrape import ScrapeRequest
 
 router = APIRouter()
 
@@ -34,7 +35,7 @@ async def get_parser(url: str) -> BaseParser:
     raise ValueError("No parser available for this URL")
 
 @router.get("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
-async def scrape_data(url: str):
+async def scrape_data(url: str, year="2024", province="江苏", admission_type="一般录取"):
     browser = await manager.playwright.chromium.launch(headless=False, slow_mo=1000)
 
     try:
@@ -45,7 +46,6 @@ async def scrape_data(url: str):
 
          # 访问页面
         await page.goto(url, timeout=30000)
-        print(f"{url}")
 
         # 等到dom加载完成
         await page.wait_for_load_state("domcontentloaded")
@@ -54,7 +54,7 @@ async def scrape_data(url: str):
         parser = await get_parser(url)
 
          # 执行解析器
-        items = await parser.parse(page)
+        items = await parser.parse(page, ScrapeRequest(province=province, year=year, admission_type=admission_type))
 
         return ResponseModel(status="success", data=items, message="ok")
     except Exception as e:

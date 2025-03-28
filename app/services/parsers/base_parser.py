@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from playwright.async_api import Page
 from urllib.parse import urlparse
 from app.schemas.scrape import ScrapeResonse
+from app.schemas.scrape import ScrapeRequest
 
 class BaseParser(ABC):
     @classmethod
@@ -23,6 +24,6 @@ class BaseParser(ABC):
     
     @staticmethod
     @abstractmethod
-    async def parse(page: Page) -> list[ScrapeResonse]:
+    async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         """解析页面并返回结构化数据"""
         pass

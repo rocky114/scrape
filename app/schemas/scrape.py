@@ -14,3 +14,8 @@ class ScrapeResonse(BaseModel):
     highest_score_rank: str = "" # 排名 '200000名次'
     lowest_score: str = "" # 最低分 '500'
     lowest_score_rank: str = "" # 排名 '200000名次'
+
+class ScrapeRequest(BaseModel):
+    year: str = "" # 年份 '2024'
+    province: str = "" # 招生省份 '江苏'
+    admission_type: str = "" # 类型 '普通类, 高校专项'

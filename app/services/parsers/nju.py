@@ -1,7 +1,7 @@
 from app.services.parsers.base_parser import BaseParser
 from playwright.async_api import Page
 from app.schemas.scrape import ScrapeResonse
-import asyncio
+from app.schemas.scrape import ScrapeRequest
 
 class NJUParser(BaseParser):
     @staticmethod
@@ -13,7 +13,7 @@ class NJUParser(BaseParser):
         return "南京大学"
 
     @staticmethod
-    async def parse(page: Page) -> list[ScrapeResonse]:
+    async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
         # 初始表格数据 物理类+一般录取
