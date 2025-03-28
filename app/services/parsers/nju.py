@@ -43,7 +43,6 @@ class NJUParser(BaseParser):
         except Exception as e:
             print(f"解析历史类+一般录取表格失败: {e}") 
 
-        await asyncio.sleep(30)  # 强制等待2秒观察页面
         return ret
     
     @staticmethod
@@ -67,7 +66,7 @@ class NJUParser(BaseParser):
                     province: columns[1].innerText.trim(),
                     academic_category: columns[2].innerText.trim(),
                     admission_type: columns[3].innerText.trim(),
-                    min_score: columns[4].innerText.trim()     
+                    lowest_score: columns[4].innerText.trim()     
                 } : null;
             }).filter(item => item !== null);
         }''')
