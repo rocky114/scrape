@@ -35,8 +35,8 @@ async def get_parser(url: str) -> BaseParser:
     raise ValueError("No parser available for this URL")
 
 @router.get("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
-async def scrape_data(url: str, year="2024", province="江苏", admission_type="一般录取"):
-    browser = await manager.playwright.chromium.launch(headless=False, slow_mo=1000)
+async def scrape_data(url: str, year="2024", province="江苏", admission_type="普通类"):
+    browser = await manager.playwright.chromium.launch(headless=False, slow_mo=500)
 
     try:
         # 匹配解析器
