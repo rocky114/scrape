@@ -34,30 +34,27 @@ async def get_parser(url: str) -> BaseParser:
         
     raise ValueError("No parser available for this URL")
 
-@router.get("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
-async def scrape_data(url: str, year="2024", province="江苏", admission_type="普通类"):
+@router.post("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
+async def scrape_data(request: ScrapeRequest):
     browser = await manager.playwright.chromium.launch(headless=False, slow_mo=500)
 
     try:
         # 匹配解析器
-        parser = await get_parser(url)
+        parser = await get_parser(request.url)
 
         page = await browser.new_page()
 
          # 访问页面
-        await page.goto(url, timeout=30000)
+        await page.goto(request.url, timeout=30000)
 
         # 等到dom加载完成
         await page.wait_for_load_state("domcontentloaded")
 
-        # 匹配解析器
-        parser = await get_parser(url)
-
          # 执行解析器
-        items = await parser.parse(page, ScrapeRequest(province=province, year=year, admission_type=admission_type))
+        items = await parser.parse(page, request=request)
 
         return ResponseModel(status="success", data=items, message="ok")
     except Exception as e:
-        return ResponseModel(status="fail", message=f"occur err: {e}")
+        return ResponseModel(status="error", message=f"occur err: {e}")
     finally:
         await browser.close()

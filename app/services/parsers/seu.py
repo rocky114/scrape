@@ -36,7 +36,6 @@ class NJUParser(BaseParser):
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table.wp_editor_art_table tbody tr');
             return Array.from(rows).slice(1).map(row => {
-                console.log(row.outerHTML)                       
                 const columns = row.querySelectorAll('td');
                 return columns.length > 0 ? {
                     year: request.year,

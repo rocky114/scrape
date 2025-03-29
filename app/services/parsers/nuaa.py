@@ -6,11 +6,11 @@ from app.schemas.scrape import ScrapeRequest
 class NJUParser(BaseParser):
     @staticmethod
     def domain() -> str:
-        return "zsb.suda.edu.cn"
+        return "zsservice.nuaa.edu.cn"
     
     @staticmethod
     def name() -> str:
-        return "苏州大学"
+        return "南京航空航天大学"
 
     @staticmethod
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
@@ -31,26 +31,24 @@ class NJUParser(BaseParser):
 
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
-        await page.wait_for_selector("table#ctl00_ContentPlaceHolder1_GridView1:has(tbody tr)", state="attached")
+        await page.wait_for_selector("table:has(tbody tr)", state="attached")
 
         row_data = await page.evaluate('''(request) => {
-            const rows = document.querySelectorAll('table#ctl00_ContentPlaceHolder1_GridView1 tbody tr');
-            return Array.from(rows).slice(1).map(row => {
+            const rows = document.querySelectorAll('table tbody tr');
+            return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('td');
                 return columns.length > 0 ? {
                     year: request.year,
-                    province: request.province,
-                    major_name: columns[0].innerText.trim().split("--")[0],              
-                    academic_category: columns[2].innerText.trim(),
-                    admission_type: request.admission_type,                  
-                    highest_score: columns[3].innerText.trim(),
-                    lowest_score: columns[4].innerText.trim()     
+                    province: columns[0].innerText.trim(),
+                    admission_type: columns[1].innerText.trim(),
+                    academic_category: columns[2].innerText.trim(),              
+                    major_name: columns[4].innerText.trim(),                        
+                    highest_score: columns[5].innerText.trim(),
+                    lowest_score: columns[6].innerText.trim()     
                 } : null;
             }).filter(item => item !== null);
         }''', {
-            "year": request.year,
-            "province": request.province,
-            "admission_type": request.admission_type 
+            "year": request.year
         })
 
         return [ScrapeResonse(**item) for item in row_data]
