@@ -37,7 +37,6 @@ async def get_parser(url: str) -> BaseParser:
 @router.post("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
 async def scrape_data(request: ScrapeRequest):
     browser = await manager.playwright.chromium.launch(headless=False, slow_mo=500)
-    
     try:
         # 匹配解析器
         parser = await get_parser(request.url)
