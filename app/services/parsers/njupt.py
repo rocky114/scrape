@@ -3,7 +3,6 @@ from playwright.async_api import Page
 from app.schemas.scrape import ScrapeResonse
 from app.schemas.scrape import ScrapeRequest
 import pandas as pd
-from pathlib import Path
 
 class NJUParser(BaseParser):
     @staticmethod
