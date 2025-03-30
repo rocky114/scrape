@@ -25,6 +25,9 @@ class NJUParser(BaseParser):
             img_locator = page.locator("div.content-box img")
             await img_locator.wait_for(state="attached")  # 10秒超时
 
+            raise ConnectionError(f"图片OCR暂未实现, 请等待...")
+
+
             # 3. 获取图片URL（处理可能的相对路径）
             """
             img_url = await img_locator.get_attribute("src")

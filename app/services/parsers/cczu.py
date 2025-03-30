@@ -6,42 +6,27 @@ from app.schemas.scrape import ScrapeRequest
 class NJUParser(BaseParser):
     @staticmethod
     def domain() -> str:
-        return "bkzs.nju.edu.cn"
+        return "cdzs.cczu.edu.cn"
     
     @staticmethod
     def name() -> str:
-        return "南京大学"
+        return "常州大学"
 
     @staticmethod
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
-        # 初始表格数据 物理类+一般录取
-        try:
-            items = await NJUParser.parse_table(page)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析物理类+一般录取表格失败: {e}")
-
         # 切换到 物理类+中外合作办学
         try:
-            await page.get_by_role("link", name="中外合作办学").click()
+            await page.locator("div#searchBox input#searchBtn").click()
 
             items = await NJUParser.parse_table(page)
 
             ret.extend(items)
         except Exception as e:
-            print(f"解析物理类+中外合作办学表格失败: {e}")   
+            print(f"解析表格失败: {e}")   
 
-        # 切换到 历史类+一般录取
-        try:
-            await page.get_by_role("link", name="历史类").click()
-
-            items = await NJUParser.parse_table(page)
-
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析历史类+一般录取表格失败: {e}") 
+            raise
 
         return ret
     
@@ -51,22 +36,26 @@ class NJUParser(BaseParser):
 
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
-        await page.wait_for_selector("table#zsSsgradeListPlace:has(tbody tr)", state="attached", timeout=5000)
+        await page.wait_for_selector("div#result table:has(tbody tr)", state="attached", timeout=5000)
     
         # 步骤2：等待行数据加载
-        await NJUParser.wait_for_table_rows(page)
+        # await NJUParser.wait_for_table_rows(page)
 
         row_data = await page.evaluate('''() => {
-            const rows = document.querySelectorAll('table#zsSsgradeListPlace tbody tr');
-            return Array.from(rows).map(row => {
+            const rows = document.querySelectorAll('div#result table tbody tr');
+            return Array.from(rows).slice(1).map(row => {
                 const columns = row.querySelectorAll('td');
-                return columns.length > 0 ? {
+                return {
                     year: columns[0].innerText.trim(),
-                    province: columns[1].innerText.trim(),
-                    academic_category: columns[2].innerText.trim(),
-                    admission_type: columns[3].innerText.trim(),
-                    lowest_score: columns[4].innerText.trim()     
-                } : null;
+                    academic_category: columns[1].innerText.trim(),
+                    admission_type: columns[2].innerText.trim(),
+                    major_name: columns[3].innerText.trim(),
+                    enrollment_quota: columns[4].innerText.trim(),
+                    highest_score: columns[5].innerText.trim(),
+                    highest_score_rank: columns[6].innerText.trim(),
+                    lowest_score: columns[7].innerText.trim(),
+                    lowest_score_rank: columns[8].innerText.trim()     
+                };
             }).filter(item => item !== null);
         }''')
 
@@ -78,7 +67,7 @@ class NJUParser(BaseParser):
         try:
             # 条件1：等待至少1个tr存在（且列数正确）
             await page.wait_for_function('''() => {
-                const rows = document.querySelectorAll('table.table_1 tbody tr');
+                const rows = document.querySelectorAll('div#result table tbody tr');
                 return rows.length > 0 && rows[0].querySelectorAll('td').length >= 5;
             }''', timeout=10000)
                 
