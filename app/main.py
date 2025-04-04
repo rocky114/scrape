@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.core.browser import manager
 from app.api.routers import api_router
-import threading
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
