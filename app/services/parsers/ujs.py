@@ -56,7 +56,7 @@ class PageParser(BaseParser):
                     // 提取专业组（跨行处理）
                     const groupCell = row.querySelector('td[rowspan]:not(:first-child)');
                     if (groupCell) {
-                        academicCategory = groupCell.innerText.trim();
+                        academicCategory = groupCell.innerText.trim().match(/（(.+?)）/)?.[1];
                     }
                     
                     // 提取省控线（跨行处理）
@@ -68,7 +68,7 @@ class PageParser(BaseParser):
                     // 提取专业组（跨行处理）
                     const groupCell = row.querySelector('td[rowspan]:first-child');
                     if (groupCell) {
-                        academicCategory = groupCell.innerText.trim();
+                        academicCategory = groupCell.innerText.trim().match(/（(.+?)）/)?.[1];
                     }                   
                 }
 
