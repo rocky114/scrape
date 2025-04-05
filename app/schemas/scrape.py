@@ -7,7 +7,6 @@ class ScrapeResonse(BaseModel):
     academic_category: str = "" # 科类 '历史+不限'
     major_name: str = "" # 专业名称 '会计学'
     enrollment_quota: str = "" # 招生人数
-    admission_batch: str = "" # 批次
     min_admission_score: str = "" # 投档分 '600'
     min_admission_rank: str = "" # 排名 '200000名次'
     highest_score: str = "" # 最高分 '700'
