@@ -36,12 +36,21 @@ async def get_parser(url: str) -> BaseParser:
 
 @router.post("/scrape", response_model=ResponseModel[list[ScrapeResonse]])
 async def scrape_data(request: ScrapeRequest):
-    browser = await manager.playwright.chromium.launch(headless=False, slow_mo=1000)
+    browser = await manager.playwright.chromium.launch(
+        headless=False, 
+        slow_mo=1000, 
+        args=["--disable-blink-features=AutomationControlled"]
+    )
+
+    context = await browser.new_context(
+        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+    )
+
     try:
         # 匹配解析器
         parser = await get_parser(request.url)
 
-        page = await browser.new_page()
+        page = await context.new_page()
 
          # 访问页面
         await page.goto(request.url, timeout=30000)
