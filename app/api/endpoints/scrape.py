@@ -53,7 +53,7 @@ async def scrape_data(request: ScrapeRequest):
         page = await context.new_page()
 
          # 访问页面
-        await page.goto(request.url, timeout=30000)
+        await page.goto(request.url, timeout=60000)
 
         # 等到dom加载完成
         await page.wait_for_load_state("domcontentloaded")
