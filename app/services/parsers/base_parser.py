@@ -6,13 +6,10 @@ from app.schemas.scrape import ScrapeRequest
 
 class BaseParser(ABC):
     @classmethod
-    def match(cls, url: str) -> bool:
-        domain = urlparse(url).netloc.lower()
+    def match(cls, university_name: str) -> bool:
+        # domain = urlparse(url).netloc.lower()
         # 检查是否以目标域名结尾（包含直接相等的情况）
-        return domain.endswith(cls.domain()) and (
-            domain == cls.domain() or          # 完全匹配
-            domain.endswith('.' + cls.domain()) # 子域名匹配
-        )
+        return cls.name() == university_name
     
     @staticmethod
     @abstractmethod

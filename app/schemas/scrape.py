@@ -18,3 +18,4 @@ class ScrapeRequest(BaseModel):
     year: str = "2024" # 年份 '2024'
     province: str = "江苏" # 招生省份 '江苏'
     admission_type: str = "普通类" # 类型 '普通类, 高校专项'
+    university_name: str 

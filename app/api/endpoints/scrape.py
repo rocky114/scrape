@@ -27,9 +27,9 @@ def load_parsers():
 
     return parsers    
 
-async def get_parser(url: str) -> BaseParser:
+async def get_parser(university_name: str) -> BaseParser:
     for parser in load_parsers():
-        if parser.match(url):
+        if parser.match(university_name):
             return parser
         
     raise ValueError("No parser available for this URL")
@@ -48,7 +48,7 @@ async def scrape_data(request: ScrapeRequest):
 
     try:
         # 匹配解析器
-        parser = await get_parser(request.url)
+        parser = await get_parser(request.university_name)
 
         page = await context.new_page()
 
