@@ -16,6 +16,15 @@ class NJUParser(BaseParser):
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
+        # 点击"2024"（精确文本匹配）
+        await page.locator(f'li.filter-item:has-text("{request.year}")').click()
+
+        # 点击"江苏省"（精确文本匹配）
+        await page.locator(f'li.filter-item:has-text("{request.province}")').click()
+
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_timeout(1000)
+
         # 初始表格数据 物理类+一般录取
         try:
             items = await NJUParser.parse_table(page, request=request)
@@ -31,20 +40,21 @@ class NJUParser(BaseParser):
 
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
-        await page.wait_for_selector("table:has(tbody tr)", state="attached")
+        await page.wait_for_selector("table.filter-table:has(tbody tr)", state="attached")
 
         row_data = await page.evaluate('''(request) => {
-            const rows = document.querySelectorAll('table tbody tr');
+            const rows = document.querySelectorAll('table.filter-table')[1].querySelectorAll('tbody tr');
+
             return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('td');
                 return columns.length > 0 ? {
-                    year: request.year,
-                    province: columns[0].innerText.trim(),
-                    admission_type: columns[1].innerText.trim(),
-                    academic_category: columns[2].innerText.trim(),              
-                    major_name: columns[4].innerText.trim(),                        
-                    highest_score: columns[5].innerText.trim(),
-                    lowest_score: columns[6].innerText.trim()     
+                    year: columns[0].innerText.trim(),
+                    province: columns[1].innerText.trim(),
+                    admission_type: columns[2].innerText.trim(),
+                    academic_category: columns[3].innerText.trim(),              
+                    major_name: columns[5].innerText.trim(),                        
+                    highest_score: columns[6].innerText.trim(),
+                    lowest_score: columns[7].innerText.trim()     
                 } : null;
             }).filter(item => item !== null);
         }''', {
