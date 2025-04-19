@@ -90,3 +90,4 @@ class PageParser(BaseParser):
         except Exception as e:
             print(f"等待表格行加载完成失败: {e}")
             raise
+        

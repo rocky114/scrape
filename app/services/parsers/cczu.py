@@ -20,7 +20,7 @@ class NJUParser(BaseParser):
         try:
             await page.locator("div#searchBox input#searchBtn").click()
 
-            items = await NJUParser.parse_table(page)
+            items = await NJUParser.parse_table(page, request)
 
             ret.extend(items)
         except Exception as e:
@@ -31,7 +31,7 @@ class NJUParser(BaseParser):
         return ret
     
     @staticmethod
-    async def parse_table(page: Page) -> list[ScrapeResonse]:
+    async def parse_table(page: Page, request:ScrapeRequest) -> list[ScrapeResonse]:
         """Helper function to extract table data from the page."""
 
         # 步骤1：确保表格可见
@@ -41,12 +41,13 @@ class NJUParser(BaseParser):
         # 步骤2：等待行数据加载
         # await NJUParser.wait_for_table_rows(page)
 
-        row_data = await page.evaluate('''() => {
+        row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('div#result table tbody tr');
             return Array.from(rows).slice(1).map(row => {
                 const columns = row.querySelectorAll('td');
                 return {
-                    year: columns[0].innerText.trim(),
+                    year: request.year,
+                    province: columns[0].innerText.trim(),
                     academic_category: columns[1].innerText.trim(),
                     admission_type: columns[2].innerText.trim(),
                     major_name: columns[3].innerText.trim(),
@@ -57,7 +58,9 @@ class NJUParser(BaseParser):
                     lowest_score_rank: columns[8].innerText.trim()     
                 };
             }).filter(item => item !== null);
-        }''')
+        }''', {
+            "year": request.year
+        })
 
         return [ScrapeResonse(**item) for item in row_data]
     
