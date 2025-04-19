@@ -43,8 +43,7 @@ class NJUParser(BaseParser):
                 }
                 let title = columns[1].innerText.trim();
                 if (title.includes('江苏科技大学')) {
-                    const match = title.match(/\((.*?)\)/); // 匹配第一个括号内容
-                    academic_category = match ? match[1] : "";    
+                    academic_category = title.match(/[（(](.+?)[）)]/)?.[1]; // 匹配第一个括号内容                    
                     return null;                                  
                 }
                                                                                   
@@ -54,7 +53,6 @@ class NJUParser(BaseParser):
                     admission_type: request.admission_type,
                     academic_category: academic_category,
                     major_name: columns[1].innerText.trim(), 
-                    min_admission_score: columns[2].innerText.trim(),                                         
                     highest_score: columns[4].innerText.trim(),
                     lowest_score: columns[5].innerText.trim(), 
                     lowest_score_rank: columns[7].innerText.trim()  
