@@ -46,7 +46,7 @@ class NJUParser(BaseParser):
             rows = data.get("data", [])
 
             for row in rows:
-                if row["major"] == "投档线":
+                if "投档" in row["major"]:
                     continue
 
                 ret.append(ScrapeResonse(
@@ -55,7 +55,7 @@ class NJUParser(BaseParser):
                     admission_type=row["type"],
                     academic_category=row["discipline"],
                     major_name=row["major"], 
-                    min_admission_score=str(row["filescore"]),
+                    lowest_score=str(row["filescore"]),
                     highest_score=str(row["highestscore"]),
                     )
                 )
