@@ -18,7 +18,7 @@ class NJUParser(BaseParser):
 
         # 初始表格数据 物理类+一般录取
         try:
-            items = await NJUParser.parse_table(page)
+            items = await NJUParser.parse_table(page, request)
             ret.extend(items)
         except Exception as e:
             print(f"解析物理类+一般录取表格失败: {e}")
@@ -27,7 +27,7 @@ class NJUParser(BaseParser):
         try:
             await page.get_by_role("link", name="中外合作办学").click()
 
-            items = await NJUParser.parse_table(page)
+            items = await NJUParser.parse_table(page, request)
 
             ret.extend(items)
         except Exception as e:
@@ -37,7 +37,7 @@ class NJUParser(BaseParser):
         try:
             await page.get_by_role("link", name="历史类").click()
 
-            items = await NJUParser.parse_table(page)
+            items = await NJUParser.parse_table(page, request)
 
             ret.extend(items)
         except Exception as e:
@@ -46,7 +46,7 @@ class NJUParser(BaseParser):
         return ret
     
     @staticmethod
-    async def parse_table(page: Page) -> list[ScrapeResonse]:
+    async def parse_table(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         """Helper function to extract table data from the page."""
 
         # 步骤1：确保表格可见
@@ -56,7 +56,7 @@ class NJUParser(BaseParser):
         # 步骤2：等待行数据加载
         await NJUParser.wait_for_table_rows(page)
 
-        row_data = await page.evaluate('''() => {
+        row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table#zsSsgradeListPlace tbody tr');
             return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('td');
@@ -68,7 +68,9 @@ class NJUParser(BaseParser):
                     lowest_score: columns[4].innerText.trim()     
                 } : null;
             }).filter(item => item !== null);
-        }''')
+        }''', {
+            "admission_type": request.admission_type
+        })
 
         return [ScrapeResonse(**item) for item in row_data]
     
