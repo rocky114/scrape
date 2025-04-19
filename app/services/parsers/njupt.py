@@ -18,7 +18,7 @@ class NJUParser(BaseParser):
         ret: list[ScrapeResonse] = []
 
         try:
-            newest_link = page.locator("div#wp_news_w51 ul.news_list li:first-child a")
+            newest_link = page.locator("ul.news_list li:first-child a")
 
             await newest_link.wait_for(state="attached")
             
