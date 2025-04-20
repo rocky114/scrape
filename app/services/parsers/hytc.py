@@ -18,52 +18,41 @@ class PageParser(BaseParser):
         selector = f'dd#scArea4 a[data-value="{academic_category}"]'
         await page.click(selector)
         await page.wait_for_load_state("networkidle")  # 等待页面更新
+        await page.wait_for_timeout(500)
 
     @staticmethod
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
-        try:
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析体育(物理类)表格失败: {e}")
+        """体育(物理类)"""
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
+        
+        """物理类"""
+        await PageParser.click_category(page, "物理类")
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
+         
+        """历史类"""
+        await PageParser.click_category(page, "历史类")
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
+        
+        """体育(历史类)"""
+        await PageParser.click_category(page, "体育(历史类)")
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
 
-        try:
-            await PageParser.click_category(page, "物理类")
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析物理类表格失败: {e}")  
+        """艺术(物理类)"""
+        await PageParser.click_category(page, "艺术(物理类)")
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
 
-        try:
-            await PageParser.click_category(page, "历史类")
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析历史类表格失败: {e}") 
-
-        try:
-            await PageParser.click_category(page, "体育(历史类)")
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析体育(历史类)表格失败: {e}") 
-
-        try:
-            await PageParser.click_category(page, "艺术(物理类)")
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析艺术(物理类)表格失败: {e}") 
-
-        try:
-            await PageParser.click_category(page, "艺术(历史类)")
-            items = await PageParser.parse_table(page, request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析艺术(历史类)表格失败: {e}")  
-
+        """艺术(历史类)"""
+        await PageParser.click_category(page, "艺术(历史类)")
+        items = await PageParser.parse_table(page, request)
+        ret.extend(items)
+        
         return ret
     
     @staticmethod
@@ -87,7 +76,6 @@ class PageParser(BaseParser):
                     academic_category: columns[1].innerText.trim(),
                     admission_type: columns[2].innerText.trim(),
                     major_name: columns[3].innerText.trim(),                   
-                    min_admission_score: columns[4].innerText.trim(),  
                     lowest_score: columns[5].innerText.trim(),
                     lowest_score_rank: columns[6].innerText.trim()   
                 } : null;
