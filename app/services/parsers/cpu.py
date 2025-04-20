@@ -54,11 +54,18 @@ class PageParser(BaseParser):
             const rows = document.querySelectorAll('table.news_table tbody tr');
             return Array.from(rows).slice(1).map(row => {
                 const columns = row.querySelectorAll('td');
+                let major_name = columns[0].innerText.trim();
+                let admission_type = request.admission_type;
+                if (major_name.includes("中外合作办学")) {
+                    admission_type = "中外合作办学";                      
+                } else if (major_name.includes("高校专项")) {
+                    admission_type = "高校专项";             
+                }
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
-                    admission_type: request.admission_type,                   
-                    major_name: columns[0].innerText.trim(),                   
+                    admission_type: admission_type,                   
+                    major_name: major_name,                   
                     academic_category: columns[1].innerText.trim(),
                     lowest_score: columns[3].innerText.trim(),
                     highest_score: columns[2].innerText.trim()     
