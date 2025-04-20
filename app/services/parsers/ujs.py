@@ -41,7 +41,6 @@ class PageParser(BaseParser):
 
             let admissionType = '';
             let academicCategory = '';
-            let minAdmissionScore = '';
                                                                                                                         
             return Array.from(rows).slice(1).map(row => {
                 let columns = row.querySelectorAll('td[rowspan]');
@@ -57,12 +56,6 @@ class PageParser(BaseParser):
                     const groupCell = row.querySelector('td[rowspan]:not(:first-child)');
                     if (groupCell) {
                         academicCategory = groupCell.innerText.trim().match(/（(.+?)）/)?.[1];
-                    }
-                    
-                    // 提取省控线（跨行处理）
-                    const controlLineCell = row.querySelector('td[rowspan]:last-child');
-                    if (controlLineCell) {
-                        minAdmissionScore = controlLineCell.innerText.trim();
                     }
                 } else if (columns.length == 1) {
                     // 提取专业组（跨行处理）
@@ -81,8 +74,7 @@ class PageParser(BaseParser):
                     major_name: columns[0].innerText.trim(),
                     enrollment_quota: columns[1].innerText.trim(),
                     highest_score: columns[2].innerText.trim(),
-                    lowest_score: columns[3].innerText.trim(),                                                                            
-                    min_admission_score: minAdmissionScore
+                    lowest_score: columns[3].innerText.trim()
                 } : null;
             }).filter(item => item !== null);
         }''', {
