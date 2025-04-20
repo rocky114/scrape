@@ -52,7 +52,6 @@ class PageParser(BaseParser):
                     academic_category: columns[4].innerText.trim(),
                     admission_type: columns[5].innerText.trim(),
                     enrollment_quota: columns[6].innerText.trim(),
-                    min_admission_score: columns[7].innerText.trim(),
                     lowest_score: columns[9].innerText.trim(),
                     lowest_score_rank: columns[10].innerText.trim(),
                     highest_score: columns[8].innerText.trim()     
