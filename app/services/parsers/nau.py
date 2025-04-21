@@ -16,6 +16,10 @@ class PageParser(BaseParser):
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
+        await page.locator(f'li:has-text("{request.year}")').click()
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_timeout(500)
+
         while True:
             # 初始表格数据 物理类+一般录取
             items = await PageParser.parse_table(page, request)
@@ -48,10 +52,14 @@ class PageParser(BaseParser):
             const rows = document.querySelectorAll('div.el-table__body-wrapper table tbody tr');
             return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('td');
+                let admission_type = request.admission_type;                       
+                if (columns[2].innerText.trim().includes("中外合作办学")) {
+                    admission_type = "中外合作办学";
+                }                        
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
-                    admission_type: columns[1].innerText.trim(),                   
+                    admission_type: admission_type,                   
                     academic_category: columns[0].innerText.trim(),
                     major_name: columns[2].innerText.trim(),
                     lowest_score: columns[3].innerText.trim()     
@@ -59,7 +67,8 @@ class PageParser(BaseParser):
             }).filter(item => item !== null);
         }''', {
             "year": request.year,
-            "province": request.province
+            "province": request.province,
+            "admission_type": request.admission_type
         })
 
         return [ScrapeResonse(**item) for item in row_data]
