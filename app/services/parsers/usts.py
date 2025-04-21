@@ -56,8 +56,7 @@ class PageParser(BaseParser):
                     major_name: columns[3].innerText.trim(),
                     enrollment_quota: columns[4].innerText.trim(),
                     highest_score: columns[5].innerText.trim(),
-                    lowest_score: columns[6].innerText.trim(),
-                    min_admission_score: columns[7].innerText.trim()     
+                    lowest_score: columns[6].innerText.trim()
                 } : null;
             }).filter(item => item !== null);
         }''', {
