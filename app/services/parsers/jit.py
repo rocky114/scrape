@@ -60,8 +60,7 @@ class PageParser(BaseParser):
                     admission_type: columns[2].innerText.trim(),                   
                     major_name: columns[5].innerText.trim(),                   
                     academic_category: columns[3].innerText.trim(),
-                    lowest_score: columns[7].innerText.trim(),
-                    min_admission_score: columns[6].innerText.trim()     
+                    lowest_score: columns[7].innerText.trim()
                 } : null;
             }).filter(item => item !== null);
         }''')
