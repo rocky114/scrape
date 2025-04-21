@@ -37,10 +37,9 @@ class PageParser(BaseParser):
 
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table.MsoNormalTable tbody tr');
-            const result = [];
 
             let academicCategory = '';
-            let minAdmissionScore = '';
+            let admission_type = request.admission_type;                                             
                                                                                                                         
             return Array.from(rows).slice(1).map(row => {
                 let columns = row.querySelectorAll('td[rowspan]');
@@ -48,15 +47,13 @@ class PageParser(BaseParser):
                 if (columns.length == 3) {
                      // 提取专业组（跨行处理）
                     academicCategory = columns[0].innerText.trim().match(/[（(](.+?)[）)]/)?.[1];
-                    
-                    // 提取省控线（跨行处理）
-                    minAdmissionScore = columns[2].innerText.trim(); 
+                    console.log(columns[1].innerText.trim());
+                    if(columns[1].innerText.trim().includes("/")) {
+                        admission_type = "艺术类";              
+                    } 
                 } else if (columns.length == 2) {
                     // 提取专业组（跨行处理）
-                    academicCategory = columns[0].innerText.trim().match(/[（(](.+?)[）)]/)?.[1];
-                    
-                    // 提取省控线（跨行处理）
-                    minAdmissionScore = columns[1].innerText.trim();                   
+                    academicCategory = columns[0].innerText.trim().match(/[（(](.+?)[）)]/)?.[1];                  
                 }
 
                 columns = row.querySelectorAll('td:not([rowspan])');                                            
@@ -64,23 +61,25 @@ class PageParser(BaseParser):
                     return {
                             year: request.year,
                             province: request.province,
-                            admission_type: request.admission_type,
+                            admission_type: admission_type,
                             academic_category: academicCategory,                   
                             major_name: columns[1].innerText.trim(),
                             highest_score: columns[2].innerText.trim(),
-                            lowest_score: columns[3].innerText.trim(),                                                                            
-                            min_admission_score: minAdmissionScore
+                            lowest_score: columns[3].innerText.trim()                                                                            
                         };
                 } else if (columns.length == 7) {
+                    if(columns[3].innerText.trim().includes("/")) {
+                        admission_type = "艺术类";              
+                    }
+                                       
                     return {
                             year: request.year,
                             province: request.province,
-                            admission_type: request.admission_type,
+                            admission_type: admission_type,
                             academic_category: columns[1].innerText.trim().match(/[（(](.+?)[）)]/)?.[1],                   
                             major_name: columns[2].innerText.trim(),
                             highest_score: columns[5].innerText.trim(),
-                            lowest_score: columns[6].innerText.trim(),                                                                            
-                            min_admission_score: columns[4].innerText.trim()
+                            lowest_score: columns[6].innerText.trim()                                                                            
                         };                
                 }
             }).filter(item => item !== null);
@@ -90,8 +89,6 @@ class PageParser(BaseParser):
             "admission_type": request.admission_type
         })
 
-        print(f"{row_data}")
-        page.wait_for_timeout(30)
         return [ScrapeResonse(**item) for item in row_data]
     
     @staticmethod
