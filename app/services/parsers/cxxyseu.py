@@ -34,30 +34,29 @@ class PageParser(BaseParser):
 
         await page.wait_for_load_state("networkidle")
         await page.wait_for_timeout(1000)
-
-        # 初始表格数据 物理类+一般录取
-        try:
-            items = await PageParser.parse_table(frame, request=request)
-            ret.extend(items)
-        except Exception as e:
-            print(f"解析专业录取分数表格失败: {e}")
-
+        
+        items = await PageParser.parse_table(frame, request=request)
+        ret.extend(items)
+        
         return ret
     
     @staticmethod
     async def parse_table(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
-        """Helper function to extract table data from the page."""
-
         await page.wait_for_selector("table.cq_resultTable:has(tbody tr)", state="attached", timeout=30000)
 
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelector('table.cq_resultTable').querySelectorAll('tbody tr');
+            
             return Array.from(rows).slice(1).map(row => {
                 const columns = row.querySelectorAll('td');
+                let admission_type = request.admission_type;
+                if (columns[2].innerText.trim().includes("艺术")) {
+                    admission_type = "艺术类";                   
+                }
                 return columns.length > 0 ? {
                     year: columns[0].innerText.trim(),
                     province: columns[1].innerText.trim(),
-                    admission_type: request.admission_type,
+                    admission_type: admission_type,
                     academic_category: columns[3].innerText.trim(),
                     major_name: columns[4].innerText.trim(),                        
                     highest_score: columns[5].innerText.trim(),
