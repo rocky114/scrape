@@ -36,10 +36,14 @@ class PageParser(BaseParser):
             const rows = document.querySelectorAll('table#zstb1 tbody tr');
             return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('th');
+                let admission_type = request.admission_type;                       
+                if (columns[2].innerText.trim().includes("/")) {
+                    admission_type = "艺术类";
+                }                       
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
-                    admission_type: columns[1].innerText.trim(),                   
+                    admission_type: admission_type,                   
                     academic_category: columns[6].innerText.trim(),
                     major_name: columns[0].innerText.trim(),
                     lowest_score: columns[4].innerText.trim(),
@@ -48,7 +52,8 @@ class PageParser(BaseParser):
             }).filter(item => item !== null);
         }''', {
             "year": request.year,
-            "province": request.province
+            "province": request.province,
+            "admission_type": request.admission_type
         })
 
         return [ScrapeResonse(**item) for item in row_data]
