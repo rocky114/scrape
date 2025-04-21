@@ -27,8 +27,6 @@ class NJUParser(BaseParser):
     
     @staticmethod
     async def parse_table(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
-        """Helper function to extract table data from the page."""
-
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
         await page.wait_for_selector("div.Article_Content table:has(tbody tr)", state="attached", timeout=5000)
@@ -39,21 +37,22 @@ class NJUParser(BaseParser):
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('div.Article_Content table tbody tr');
             
-            let min_admission_score = "";
             return Array.from(rows).slice(1).map(row => {
                 const columns = row.querySelectorAll('td');
                 if (columns[6].innerText.trim() != "") {
-                    min_admission_score = columns[6].innerText.trim();
                     return null;                   
-                }           
+                }
+                let admission_type = request.admission_type;                       
+                if (columns[5].innerText.trim().includes("/")) {
+                    admission_type = "艺术类";
+                }                                  
                 return columns.length > 0 ? {
                     year: request.year,
-                    admission_type: request.admission_type,                   
+                    admission_type: admission_type,                   
                     province: columns[1].innerText.trim(),
                     academic_category: columns[2].innerText.trim(),
                     major_name: columns[3].innerText.trim(),  
                     enrollment_quota: columns[4].innerText.trim(), 
-                    min_admission_score: min_admission_score,                                                     
                     highest_score: columns[7].innerText.trim(),
                     lowest_score: columns[8].innerText.trim()     
                 } : null;
