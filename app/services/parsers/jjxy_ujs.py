@@ -52,11 +52,15 @@ class NJUParser(BaseParser):
                 if "总计" in major_name:
                     i = i + 1
                     continue
+                
+                admission_type = request.admission_type
+                if "艺术" in academic_category_list[i]:
+                    admission_type = "艺术类"
 
                 ret.append(ScrapeResonse(
                     province=request.province,
                     year=request.year,
-                    admission_type=request.admission_type,
+                    admission_type=admission_type,
                     academic_category=academic_category_list[i],
                     major_name=major_name,
                     enrollment_quota=row["人数"],
