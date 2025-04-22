@@ -34,18 +34,57 @@ class PageParser(BaseParser):
 
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table tbody tr');
-            let academic_category = '';                           
+            let academic_category = '';  
+            let admission_type = request.admission_type;                         
             return Array.from(rows).slice(1).map(row => {
                 let columns = row.querySelectorAll('td[rowspan]');
                 if (columns.length == 1) {
-                    academic_category = columns[0].innerText.trim().match(/[（(](.+?)[）)]/)?.[1];
+                    let group_text = columns[0].innerText.trim(); 
+                                                                          
+                    academic_category = group_text.match(/[（(](.+?)[）)]/)?.[1];
+                    
+                    let sport_group = ["07专业组", "08专业组"];
+                    if (sport_group.some(keyword => group_text.includes(keyword))) {
+                        admission_type = "体育类";            
+                    }
+                                       
+                    let art_group = ["09专业组", "10专业组", "11专业组", "12专业组", "13专业组", "14专业组", "15专业组", "16专业组", "17专业组", "18专业组"];     
+                    if (art_group.some(keyword => group_text.includes(keyword))) {
+                        admission_type = "艺术类";            
+                    }
                 } 
 
-                columns = row.querySelectorAll('td:not([rowspan])');                         
+                columns = row.querySelectorAll('td:not([rowspan])'); 
+                if (columns.length == 5) {
+                    let group_text = columns[0].innerText.trim(); 
+                                                                          
+                    academic_category = group_text.match(/[（(](.+?)[）)]/)?.[1];
+                    
+                    let sport_group = ["07专业组", "08专业组"];
+                    if (sport_group.some(keyword => group_text.includes(keyword))) {
+                        admission_type = "体育类";            
+                    }
+                                       
+                    let art_group = ["09专业组", "10专业组", "11专业组", "12专业组", "13专业组", "14专业组", "15专业组", "16专业组", "17专业组", "18专业组"];     
+                    if (art_group.some(keyword => group_text.includes(keyword))) {
+                        admission_type = "艺术类";            
+                    }
+                                                          
+                    return {
+                        year: request.year,
+                        province: request.province,
+                        admission_type: admission_type,                   
+                        major_name: columns[2].innerText.trim(),                   
+                        academic_category: academic_category,
+                        lowest_score: columns[4].innerText.trim(),
+                        highest_score: columns[3].innerText.trim()     
+                    };                   
+                }   
+                                                            
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
-                    admission_type: request.admission_type,                   
+                    admission_type: admission_type,                   
                     major_name: columns[1].innerText.trim(),                   
                     academic_category: academic_category,
                     lowest_score: columns[3].innerText.trim(),
