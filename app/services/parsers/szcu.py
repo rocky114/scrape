@@ -32,14 +32,12 @@ class PageParser(BaseParser):
     
     @staticmethod
     async def parse_table(page: Page) -> list[ScrapeResonse]:
-        """Helper function to extract table data from the page."""
-
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
         await page.wait_for_selector("table.el-table__body:has(tbody tr)", state="attached", timeout=5000)
     
         # 步骤2：等待行数据加载
-        await PageParser.wait_for_table_rows(page)
+        # await PageParser.wait_for_table_rows(page)
 
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table.el-table__body')[1].querySelectorAll('tbody tr');
@@ -54,9 +52,8 @@ class PageParser(BaseParser):
                     enrollment_quota: columns[5].innerText.trim(),                                      
                     major_name: columns[6].innerText.trim(),                   
                     academic_category: columns[3].innerText.trim(),
-                    lowest_score: columns[8].innerText.trim(),
-                    highest_score: columns[9].innerText.trim(),
-                    min_admission_score: columns[11].innerText.trim()                      
+                    lowest_score: columns[8].innerText.trim().split(".")[0],
+                    highest_score: columns[9].innerText.trim().split(".")[0]
                 } : null;
             }).filter(item => item !== null);
         }''')
