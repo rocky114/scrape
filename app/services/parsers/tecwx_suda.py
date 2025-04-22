@@ -24,32 +24,33 @@ class PageParser(BaseParser):
         await page.wait_for_load_state("networkidle")
         await page.wait_for_timeout(1000)
 
-        items = await PageParser.parse_table(page)
+        items = await PageParser.parse_table(page, request)
         ret.extend(items)
 
         return ret
     
     @staticmethod
-    async def parse_table(page: Page) -> list[ScrapeResonse]:
-        """Helper function to extract table data from the page."""
-
+    async def parse_table(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
         await page.wait_for_selector("table.el-table__body:has(tbody tr)", state="attached", timeout=5000)
     
         # 步骤2：等待行数据加载
-        await PageParser.wait_for_table_rows(page)
+        # await PageParser.wait_for_table_rows(page)
 
         row_data = await page.evaluate('''(request) => {
             const rows = document.querySelectorAll('table.el-table__body')[1].querySelectorAll('tbody tr');
                            
             return Array.from(rows).map(row => {
                 let columns = row.querySelectorAll('td');
-                
+                let admission_type = request.admission_type;
+                if (columns[4].innerText.trim().includes("艺术")) {
+                    admission_type = "艺术类";                   
+                }
                 return columns.length > 0 ? {
                     year: columns[1].innerText.trim(),
                     province: columns[2].innerText.trim(),
-                    admission_type: columns[4].innerText.trim(),
+                    admission_type: admission_type,
                     enrollment_quota: columns[6].innerText.trim(),                                      
                     major_name: columns[5].innerText.trim(),                   
                     academic_category: columns[3].innerText.trim().match(/[（(](.+?)[）)]/)?.[1],
@@ -57,7 +58,9 @@ class PageParser(BaseParser):
                     highest_score: columns[9].innerText.trim()
                 } : null;
             }).filter(item => item !== null);
-        }''')
+        }''', {
+            "admission_type": request.admission_type
+        })
 
         return [ScrapeResonse(**item) for item in row_data]
     
