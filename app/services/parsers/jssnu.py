@@ -61,14 +61,27 @@ class PageParser(BaseParser):
                            
             return Array.from(rows).map(row => {
                 let columns = row.querySelectorAll('td');
-                
+                let academic_category = columns[2].innerText.trim();
+                                   
+                let admission_type = "普通类";
+                if (academic_category.includes("艺术")) {
+                    admission_type = "艺术类";                   
+                } else if (academic_category.includes("乡村定向")) {
+                    admission_type = "地方专项";                   
+                }
+                                       
+                let match = academic_category.match(/[（(](.+?)[）)]/); 
+                if (match) {
+                    academic_category = match[1];
+                }                                        
+                                                                                                                             
                 return columns.length > 0 ? {
                     year: columns[1].innerText.trim(),
                     province: columns[0].innerText.trim(),
-                    admission_type: columns[3].innerText.trim(),
+                    admission_type: admission_type,
                     enrollment_quota: columns[5].innerText.trim(),                                      
                     major_name: columns[4].innerText.trim(),                   
-                    academic_category: columns[2].innerText.trim(),
+                    academic_category: academic_category,
                     lowest_score: columns[6].innerText.trim(),
                     lowest_score_rank: columns[7].innerText.trim()
                 } : null;
