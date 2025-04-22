@@ -52,22 +52,34 @@ class PageParser(BaseParser):
             let major_name = '';                           
             return Array.from(rows).map(row => {
                 let columns = row.querySelectorAll('td[rowspan]');
-                // 提取批次（跨行处理）
                 if (columns.length == 1) {
                      // 提取专业组（跨行处理）
                     major_name = columns[0].innerText.trim();
                 } 
 
-                columns = row.querySelectorAll('td:not([rowspan])');                         
-                return columns.length > 0 ? {
-                    year: request.year,
-                    province: request.province,
-                    admission_type: request.admission_type,                   
-                    major_name: major_name,                   
-                    academic_category: columns[0].innerText.trim(),
-                    lowest_score: columns[2].innerText.trim(),
-                    highest_score: columns[1].innerText.trim()     
-                } : null;
+                columns = row.querySelectorAll('td:not([rowspan])');
+                if (columns.length == 4) {
+                    return {
+                        year: request.year,
+                        province: request.province,
+                        admission_type: request.admission_type,                   
+                        major_name: columns[0].innerText.trim(),                   
+                        academic_category: columns[1].innerText.trim(),
+                        lowest_score: columns[3].innerText.trim(),
+                        highest_score: columns[2].innerText.trim()     
+                    }                    
+                } else if (columns.length == 3) {
+                    return {
+                        year: request.year,
+                        province: request.province,
+                        admission_type: request.admission_type,                   
+                        major_name: major_name,                   
+                        academic_category: columns[0].innerText.trim(),
+                        lowest_score: columns[2].innerText.trim(),
+                        highest_score: columns[1].innerText.trim()     
+                    }                   
+                }                        
+                return null;
             }).filter(item => item !== null);
         }''', {
             "year": year,
