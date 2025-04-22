@@ -42,7 +42,6 @@ class NJUParser(BaseParser):
 
             academic_category_1 = ""
             academic_category_2 = ""
-            admission_type = ""
 
             result = df.iloc[:, [0,1,2]]
 
@@ -50,15 +49,13 @@ class NJUParser(BaseParser):
                 if row[0] == "专业":
                     academic_category_1 = row[1]
                     academic_category_2 = row[2]
-                elif row[0] == "批次":
-                    admission_type = row[1]
-                elif row[0] in ["二本省控线", "本科线", "校控线"]:
+                elif row[0] in ["批次", "二本省控线", "本科线", "校控线"]:
                     continue
                 else:
                     ret.append(ScrapeResonse(
                         province=request.province,
                         year=request.year,
-                        admission_type=admission_type,
+                        admission_type=request.admission_type,
                         academic_category=academic_category_1,
                         major_name=row[0],
                         lowest_score=row[1]
@@ -66,7 +63,7 @@ class NJUParser(BaseParser):
                     ret.append(ScrapeResonse(
                         province=request.province,
                         year=request.year,
-                        admission_type=admission_type,
+                        admission_type=request.admission_type,
                         academic_category=academic_category_2,
                         major_name=row[0],
                         lowest_score=row[2]
