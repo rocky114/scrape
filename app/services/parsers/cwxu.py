@@ -16,13 +16,13 @@ class PageParser(BaseParser):
     async def parse(page: Page, request: ScrapeRequest) -> list[ScrapeResonse]:
         ret: list[ScrapeResonse] = []
 
-        items = await PageParser.parse_table(page, request.province, request.year)
+        items = await PageParser.parse_table(page, request.admission_type, request.province, request.year)
         ret.extend(items)
 
         return ret
     
     @staticmethod
-    async def parse_table(page: Page, province:str, year:str) -> list[ScrapeResonse]:
+    async def parse_table(page: Page, admission_type:str, province:str, year:str) -> list[ScrapeResonse]:
         # 步骤1：确保表格可见
         # 等待表格刷新（DOM 更新）
         await page.wait_for_selector("table:has(tbody tr)", state="attached", timeout=5000)
@@ -41,6 +41,11 @@ class PageParser(BaseParser):
                 if (columns.length > 0) {
                      // 提取专业组（跨行处理）
                     admission_type = columns[0].innerText.trim().split("（")[0];
+                    if (admission_type.includes("艺术")) {
+                        admission_type = "艺术类";            
+                    } else {
+                        admission_type = "普通类";
+                    }
                     return null;
                 } 
 
@@ -49,13 +54,27 @@ class PageParser(BaseParser):
                     academic_category = columns[1].innerText.trim() + "+" + columns[2].innerText.trim();                   
                 }
                                        
-                columns = row.querySelectorAll('td:not([rowspan])');                         
+                columns = row.querySelectorAll('td:not([rowspan])');
+                if (columns.length == 11) {
+                    return {
+                        year: request.year,
+                        province: request.province,
+                        admission_type: request.admission_type,                   
+                        major_name: columns[4].innerText.trim(),   
+                        enrollment_quota: columns[5].innerText.trim(),                                 
+                        academic_category: columns[2].innerText.trim() + "+" + columns[3].innerText.trim(),
+                        lowest_score: columns[9].innerText.trim(),
+                        highest_score: columns[8].innerText.trim(),
+                        lowest_score_rank: columns[10].innerText.trim()                      
+                    };                
+                } 
+                                                              
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
                     admission_type: admission_type,                   
-                    major_name: columns[0].innerText.trim(),   
-                    enrollment_quota: columns[1].innerText.trim(),                                 
+                    major_name: columns[1].innerText.trim(),   
+                    enrollment_quota: columns[2].innerText.trim(),                                 
                     academic_category: academic_category,
                     lowest_score: columns[5].innerText.trim(),
                     highest_score: columns[4].innerText.trim(),
@@ -64,7 +83,8 @@ class PageParser(BaseParser):
             }).filter(item => item !== null);
         }''', {
             "year": year,
-            "province": province
+            "province": province,
+            "admission_type": admission_type
         })
 
         return [ScrapeResonse(**item) for item in row_data]
