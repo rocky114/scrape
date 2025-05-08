@@ -36,18 +36,33 @@ class PageParser(BaseParser):
             const rows = document.querySelectorAll('table#zstb1 tbody tr');
             return Array.from(rows).map(row => {
                 const columns = row.querySelectorAll('th');
+                                       
+                let major_name = columns[0].textContent.trim();
+                let province_score_line = columns[2].textContent.trim();
+                let remark = columns[6].textContent.trim();
+                                                              
                 let admission_type = request.admission_type;                       
-                if (columns[2].innerText.trim().includes("/")) {
-                    admission_type = "艺术类";
-                }                       
+                if (major_name == '社会体育指导与管理') {
+                    admission_type = '体育类';                   
+                } else if (major_name.includes('中外')) {
+                    admission_type = '中外合作';                                    
+                } else if (province_score_line.includes('/')) {
+                    admission_type = "艺术类";               
+                }    
+
+                let subject_category = '物理类';
+                if (remark.includes('历史')) {
+                    subject_category = '历史类';                   
+                }                                              
+
                 return columns.length > 0 ? {
                     year: request.year,
                     province: request.province,
                     admission_type: admission_type,                   
-                    academic_category: columns[6].innerText.trim(),
-                    major_name: columns[0].innerText.trim(),
-                    lowest_score: columns[4].innerText.trim(),
-                    highest_score: columns[3].innerText.trim()  
+                    academic_category: subject_category,
+                    major_name: major_name,
+                    lowest_score: columns[4].textContent.trim(),
+                    highest_score: columns[3].textContent.trim()  
                 } : null;
             }).filter(item => item !== null);
         }''', {
