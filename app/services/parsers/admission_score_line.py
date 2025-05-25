@@ -31,8 +31,8 @@ class PageParser(BaseParser):
                 df = pd.read_excel(
                     download.suggested_filename,
                     header=5,
-                    usecols=[1, 2],
-                    names=["university", "lowest_score"],
+                    usecols=[1, 2, 3],
+                    names=["university", "lowest_score", "admission_region"],
                     keep_default_na=False,
                     sheet_name="投档线",
                     engine="xlrd",
@@ -44,8 +44,8 @@ class PageParser(BaseParser):
                 admission_batch = subject_admission_dict.get("admission_batch", "")
                 subject_category = subject_admission_dict.get("subject_category", "")
 
-                if admission_type not in ["军队", "公安政法", "航海", "地方专项计划", "乡村教师计划", "医学定向"]:
-                    admission_type = "普通类"
+                # if admission_type not in ["军队", "公安政法", "航海", "地方专项计划", "乡村教师计划", "医学定向"]:
+                    # admission_type = "普通类"
 
                 for _, row in df.iterrows():
                     if not row["university"]:
@@ -57,15 +57,23 @@ class PageParser(BaseParser):
                     major_group = university_dict.get("major_group", "")
                     second_subject_category = university_dict.get("subject", "")
 
+                    lowest_score = row['lowest_score']
+                    admission_region = ''
+                    if '县' in lowest_score or '区' in lowest_score or '市' in lowest_score:
+                        lowest_score = row['admission_region']
+                        admission_region = row['lowest_score']
+                            
+
                     ret.append(ScrapeResonse(
                         province=request.province, 
                         year=request.year,
                         admission_type=admission_type,
                         admission_batch=admission_batch,
+                        admission_region=admission_region,
                         subject_category=f"{subject_category}{second_subject_category}",
                         major_group=major_group, 
                         university_name=university_name,
-                        lowest_score=str(row["lowest_score"]),
+                        lowest_score=lowest_score,
                         )
                     )
         except Exception as e:

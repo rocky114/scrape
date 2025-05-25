@@ -6,6 +6,7 @@ class ScrapeResonse(BaseModel):
     university_name: str = "" # 学校名称
     admission_batch: str = "" # 录取批次
     admission_type: str = "" # 类型 '普通类, 高校专项'
+    admission_region: str = "" # 定向区域
     subject_category: str = "" # 科类 '历史+不限'
     major_name: str = "" # 专业名称 '会计学'
     major_group: str = "" # 专业组
