@@ -30,12 +30,12 @@ class PageParser(BaseParser):
 
                 df = pd.read_excel(
                     download.suggested_filename,
-                    header=5,
+                    header=None,  # 不自动识别列名
+                    skiprows=5,
                     usecols=[1, 2, 3],
                     names=["university", "lowest_score", "admission_region"],
                     keep_default_na=False,
-                    sheet_name="投档线",
-                    engine="xlrd",
+                    engine="openpyxl",
                     dtype=str
                 ).dropna(how="all")
 
@@ -46,23 +46,30 @@ class PageParser(BaseParser):
 
                 # if admission_type not in ["军队", "公安政法", "航海", "地方专项计划", "乡村教师计划", "医学定向"]:
                     # admission_type = "普通类"
+                if not admission_type:
+                    admission_type = request.admission_type
+                else:
+                    admission_type = f"{request.admission_type}({admission_type})"
 
                 for _, row in df.iterrows():
                     if not row["university"]:
                         continue
 
-                    university_dict = PageParser.extract_university_major_subject_info(row["university"])
-                    
-                    university_name = university_dict.get("university", "")
-                    major_group = university_dict.get("major_group", "")
-                    second_subject_category = university_dict.get("subject", "")
-
-                    lowest_score = row['lowest_score']
-                    admission_region = ''
-                    if '县' in lowest_score or '区' in lowest_score or '市' in lowest_score:
+                    lowest_score: str = row['lowest_score']
+                    admission_region: str = ''
+                    if not lowest_score.isdigit():
                         lowest_score = row['admission_region']
                         admission_region = row['lowest_score']
-                            
+
+                    """
+                    if "定向" in lowest_score or "地区" in lowest_score:
+                        lowest_score = row['admission_region']
+                        admission_region = row['lowest_score']
+                    """
+                    university_dict = PageParser.extract_university_major_subject_info(row["university"])
+                    university_name = university_dict.get("university", "")
+                    major_group = university_dict.get("major_group", "")
+                    second_subject_category = university_dict.get("subject", "")                
 
                     ret.append(ScrapeResonse(
                         province=request.province, 
@@ -112,8 +119,17 @@ class PageParser(BaseParser):
             return {}
         
         content = match.group(1)  # "物理等科目类—其他院校"
-        category, admission_type = content.split("—")
-        category = category.replace("等科目类", "")
+        # category, admission_type = content.split("—")
+        # category = category.replace("等科目类", "")
+        # 尝试按分隔符分割
+        parts = content.split("—")
+        if len(parts) == 2:
+            category, admission_type = parts
+            category = category.replace("等科目类", "")
+        else:
+            # 若不存在分隔符，则默认处理
+            category = content.replace("等科目类", "")
+            admission_type = ""
 
         admissin_batch = ""
         if "提前批" in text:
