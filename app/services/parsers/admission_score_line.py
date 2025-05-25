@@ -48,6 +48,9 @@ class PageParser(BaseParser):
                     admission_type = "普通类"
 
                 for _, row in df.iterrows():
+                    if not row["university"]:
+                        continue
+
                     university_dict = PageParser.extract_university_major_subject_info(row["university"])
                     
                     university_name = university_dict.get("university", "")
@@ -65,8 +68,6 @@ class PageParser(BaseParser):
                         lowest_score=str(row["lowest_score"]),
                         )
                     )
-
-                break
         except Exception as e:
             print(f"解析表格失败: {e}")   
             raise
@@ -81,13 +82,13 @@ class PageParser(BaseParser):
         if not match:
             return {}
         
-        college = match[0].strip()
-        group = match[1]
-        subject = match[2]
+        college = match.group(1).strip()
+        group = match.group(2)
+        subject = match.group(3)
         
         # 拼接第二个括号内容到专业组后面
-        if match[3]:
-            group += match[3]
+        if match.group(4):
+            group += match.group(4)
         
         return {
             'university': college,
